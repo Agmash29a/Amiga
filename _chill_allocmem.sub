@@ -1,0 +1,10 @@
+;Allocate Memory subroutine....
+;Needs number of bytes in d0
+;returns start address of memory to d0
+
+Allocate-Memory:
+
+       move    #mode,a6        ;mode (old/new) old=1005 *optional
+       move.l  #4,a6           ;EXECBASE in A6
+       jsr     -$c6(a6)        ;jump to ALLOCMEM sub in ROM
+       rts

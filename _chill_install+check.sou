@@ -1,0 +1,91 @@
+;just whack your customized boot block in diskbuff (bop)
+;(there is just a little routine in there at the moment to turn off the
+;powerlight)
+execbase  = 4
+findtask  = -294
+addport   =-354
+remport   =-360
+openlib   = -408
+closelib  = -414
+opendev   = -444
+closedev  =-450
+doio      =-456
+
+1run:
+      lea diskbuff,a0
+      lea 4(a0),a1
+      clr.l (a1)
+      move.w   #$00ff,d1
+      moveq    #$00,d0
+loop: add.l    (a0)+,d0
+      bcc      jump
+      addq.l   #1,d0
+jump: dbf      d1,loop
+      not.l    d0
+      move.l   d0,(a1)
+run:
+      move.l   execbase,a6
+      sub.l    a1,a1
+      jsr      findtask(a6)
+      move.l   d0,readreply+$10
+      lea      readreply,a1
+      jsr      addport(a6)
+      lea      diskio,a1
+      move.l   #0,d0
+      clr.l    d1
+      lea      trddevice,a0
+      jsr      opendev(a6)
+      tst.l    d0
+      bne      error
+      lea      diskio,a1
+      move.l   #readreply,14(a1)
+      move     #3,28(a1)
+      move.l   #diskbuff,40(a1)
+      move.l   #2*512,36(a1)
+      move.l   #0*512,44(a1)
+      move.l   execbase,a6
+      jsr      doio(a6)
+      move     #4,28(a1)
+      move.l   #diskbuff,40(a1)
+      move.l   #2*512,36(a1)
+      move.l   #0*512,44(a1)
+      move.l   execbase,a6
+      jsr      doio(a6)
+
+      move.l   diskio+32,d6
+      lea      diskio,a1
+      move     #9,28(a1)
+      move.l   #0,36(a1)
+      jsr      doio(a6)
+      lea      readreply,a1
+      jsr      remport(a6)
+      lea      diskio,a1
+      jsr      closedev(a6)
+
+error:
+      rts
+trddevice:     dc.b 'trackdisk.device',0
+      align
+diskio:        blk.l 20,0
+readreply:     blk.l 8,0
+diskbuff:
+               dc.b "DOS",0
+               dc.l 0
+               dc.l $00000370
+
+bop:  lea      resn(pc),a1
+      jsr      -96(a6)
+      tst.l    d0
+      beq      erro
+      move.l   d0,a0
+      move.l   22(a0),a0
+      moveq    #$00,d0
+ende: cmp      #7,d0
+      beq      erro
+      or.b     #2,$bfe001
+      rts
+erro:
+      bra      ende
+
+resn: dc.b     "dos.library",0
+      end

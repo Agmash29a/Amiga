@@ -1,0 +1,79 @@
+;extra halfbright init routine (6 bp's) 
+;your ready made BIT PLANES should be stored in PLANEADR
+  
+	move.l	 #4,a6			;EXECBASE 			
+	
+;Request memory for  Copperlist
+
+ 	moveq   #52,d0		        ;Size of the Copperlist in bytes
+ 	moveq   #2,d1			;chip-RAM request
+ 	jsr     -30-168(a6)		;ALLOCATEMEM sub in rom
+* 	move.l  d0,CLadr
+ 	beq     FreePlane                ;Error! -> Free RAM for Bitplanes
+
+;Build Copperlist
+
+	moveq   #5,d4                   ;6 Planes = 6 loops to run through
+	move.l  d0,a0                   ;Address of the Copperlist to a0
+*	move.l  Planeadr,d1
+*	move.w  $dff0e0,d3              ;first Register to d3 (BPL1PTH)
+MakeCL: move.w   d3,(a0)+		        ;BPLxPTH ins RAM
+	addq.w  #2,d3              	;next Register
+ 	swap    d1
+ 	move.w  d1,(a0)+                 ;Hi-word of the Plane address in RAM
+ 	move.w  d3,(a0)+                 ;BPLxPTL ins RAM
+ 	addq.w  #2,d3                    ;next Register
+	swap    d1
+ 	move.w  d1,(a0)+                 ;Lo-word of the  Plane address in RAM
+ 	add.l   #10240,d1                ;Address of the next Plane calculated (40*256)
+  	dbf     d4,MakeCL
+ 	move.l  #$fffffffe,(a0)          ;End of Copperlist
+
+;DMA and Task switching off
+
+	jsr     -30-102(a6)		;FORBID function in rom
+	move.w  #$03e0,$dff096		;DMACON accessed
+
+;Copper initializtionn
+
+*	move.l  CLadr,$dff080		;COP1LC
+ 	move.w  #0,$dff088		;clear COPJMP1
+
+;Playfield initializition
+
+ 	move.w  #$3081,$dff08e           ;Standard value for       (DIWSTRT) 
+        move.w  #$30c1,$dff090           ;screen window		  (DIWSTOP)
+	move.w  #$0038,$dff092           ;and BitplaneDMA	  (DDFSTRT)
+	move.w  #$00d0,$dff094					  (DDFSTOP)
+	move.w  #%0110001000000000,$dff100      ;6 Bitplanes	  (BPLCON0)
+	clr.w   $dff102                  ;no Scrolling	(BPLCON1)
+	clr.w   $dff104                  ;Priority makes no difference (BPLCON2)
+	clr.w   $dff108                  ;Modulo for all Planes equals Null (BPL1MOD)
+	clr.w   $dff10a 		 ;(BPL2MOD) 
+
+;DMA on
+
+	move.w  #$8380,$dff069		;DMACON - DMA on
+ 	rts				;return to main program
+
+;Free memory for  Bitplanes
+
+FreePlane:
+ 	move.l  Planeadr,a1
+ 	move.l  #$f000,d0		;(40*265)*6
+ 	jsr     -30-180(a6)		;FREEMEM
+
+Ende:
+ 	clr.l   d0
+ 	rts                         ;sub end
+
+;Variables - just whack these on the end of the program
+
+CLadr:    dc.l 0
+
+
+
+
+
+
+

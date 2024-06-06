@@ -1,0 +1,26 @@
+In @1 - modulo 1 in bytes (a,b)
+In @2 - modulo 2 in bytes (c,d) (screen width in bytes - modulo 1)
+In @3 - Height
+In @4 - width
+in #planesize - size of BITPLANE
+in #bobmask - address of ...       
+
+       move.l  position,a0
+       move.l  #bob,d0
+       move.w  #$0fe2,bltcon0(a5)      ;USE A,B,C and D LFx:D=A*B+b*C
+       move.w  #@1,bltamod(a5)          ; Modulo
+       move.w  #@1,bltbmod(a5)          ; Modulo
+       move.w  #@2,bltcmod(a5)         ;Modulo
+       move.w  #@2,bltdmod(a5)         ;modulo in bytes
+       move.l  #bobmask,bltbpth(a5)    ;Address Bob-mask
+Wblit: btst    #14,dmaconr(a5)         ;Blitter Busy test
+       bne.s   Wblit
+       move.l  d0,bltapth(a5)          ;Address Bob-
+       move.l  a0,bltcpth(a5)          ;plane in the Address-Register
+       move.l  a0,bltdpth(a5)          ;plane in the Address-Register
+       move.w  #@3*64+@4,bltsize(a5)    ;Start Blitter
+       addq.l  #2,d0
+       adda.l  #planesize,a0
+       ;whack in a little routine here depending on the NO. of BPls
+       bra.s   wblit
+

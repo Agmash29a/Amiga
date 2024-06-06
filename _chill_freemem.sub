@@ -1,0 +1,17 @@
+;Free Memory subroutine with memory preference....
+;Needs number of bytes in d0
+;returns a 0 to d0 in memory area can't be erased
+;in a1 - the desired start address
+
+
+Free-Memory:
+
+       move.l  #4,a6           ;EXECBASE in A6
+       jsr     -$d2(a6)        ;jump to FREEMEM sub in ROM
+       ;tst.l  d0              ;everything cool?     * optional
+       ;beq    Can't-Free      ; * optional
+       rts
+
+Can't-Free:
+
+       rts

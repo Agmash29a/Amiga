@@ -1,0 +1,15 @@
+;Open libraries sub.
+;in libname - the name of the library terminated with two nulls
+;  E.g. libname:
+;           dc.b       'dos.library',0,0
+;           align
+;returns the base number in d0 (e.g DOSBASE)
+;  E.g. dosbase:
+;           blk.l      1
+
+Load-Library:
+       move.l  #4,a6           ;EXECBASE in A6
+       lea     libname,a1      ;libname into A1
+       moveq   #0,d0           ;version number?????
+       jsr     -408(a6)       ;jump to OPENLIB sub in rom
+       rts

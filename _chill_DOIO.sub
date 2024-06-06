@@ -1,0 +1,17 @@
+IN D1 - THE DOIO COMMAND (2-READ)(3-WRITE)(4-UPDATE)(5-CLEAR)(9-MOTOR)
+;(10-SEEK)(11-FORMAT)(12-REMOVE)(13-NUMBER OF DISK CHANGES)(14-DRIVE?)
+;(15-TEST IF DISK IS WRITE PROTECTED)
+;IN A1 - BUFFER ADDRESS
+;IN D2 - NO. OF SECTORS
+;IN D3 - SECTOR TO START FROM
+
+
+Doinput/ouput:
+      move     d1,28(a1)                       ;command
+      move.l   A1,40(a1)                       ;move buffer to lib.func
+      move.l   D2*512,36(a1)                   ;no. of sectors
+      move.l   D3*512,44(a1)                   ;sector to start writing to
+      move.l   #4,a6                           ;execbase
+      jsr      -456(a6)                        ;DOIO lib function
+      rts
+

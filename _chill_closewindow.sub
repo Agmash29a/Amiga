@@ -1,0 +1,9 @@
+;Closewindow action ......
+;in d1 - CONHANDLE
+;in a6 - DOSBASE
+
+close-window:
+
+       jsr     -36(a6)                 ;CLOSE function in rom
+       rts
+

@@ -1,0 +1,17 @@
+;Allocate Memory subroutine with memory preference....
+;Needs number of bytes in d0
+;returns a 0 to d0 in memory area can't be used
+;in a1 - the desired start address
+
+
+Allocate-Memory:
+
+       move.l  #4,a6           ;EXECBASE in A6
+       jsr     -$cc(a6)        ;jump to ALLOCABS sub in ROM
+       ;tst.l  d0              ;everything cool?     * optional
+       ;beq    Can't-Allocate  ; * optional
+       rts
+
+Can't-Allocate:
+
+       rts

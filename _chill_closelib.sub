@@ -1,0 +1,9 @@
+;Close dem libwawies
+;in a1 - the DOSBASE address (remember it's a long word)
+
+Close-Library:
+
+       move.l  #4,a6           ;EXECBASE address
+       jsr     -414(a6)        ;CLOSELIB function in rom
+       rts
+

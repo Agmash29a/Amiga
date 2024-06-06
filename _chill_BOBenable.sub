@@ -1,0 +1,107 @@
+Having trouble with your BLITTER?
+well don't despair dude THE CHILLERS SUBROUTINE COMPILATION
+should see ya right......
+In D0 is the window size *
+In D1 is the modulo for source C
+In D2 is the modulo for source B
+In D3 is the modulo for source A
+In D4 is the modulo for destination D
+In D5 is the shift distance for source A
+In d6 is the shift distance for source B
+In d7 is the USEX value
+In @1 is the First word mask
+In @2 is the last word mask
+In A0 is the start address for source C
+In A1 is the start address for source B
+In A2 is the start address for source A
+In A3 is the start address for destination D
+
+CHILLING BLITTER:
+
+;stepone -- Set mode change BCLR to BSET for LINES mode
+
+       bclr    #0,$dff040              ;clear bit 0 in BLTCON1
+                                       ;i.e. MODE - COPY DATA
+
+;steptwo -- Set source areas to COPY FROM
+
+       move.l  a0,$dff048              ;start address for SOURCE C
+                                       ;(BLTCPTH (16-18) & BLTCPTL (0-15)
+
+       move.l  a1,$dff04C              ;start address for SOURCE B
+                                       ;(BLTBPTH (16-18) & BLTBPTL (0-15)
+
+       move.l  a2,$dff050              ;start address for SOURCE A
+                                       ;(BLTAPTH (16-18) & BLTAPTL (0-15)
+
+          ;set area to copy to (to the bitplanes mainly...)
+
+       move.l  a3,$dff054              ;start address for DESTINATION D
+                                       ;(BLTDPTH (16-18) & BLTDPTL (0-15)
+
+
+          ;set the MODULO values now dude
+          ;MODULO VALUE is the width of source or destination -
+          ;width of Blitter window in BYTES
+
+       move.w  d1,$dff060              ;modulo value for source C
+                                       ;BLTCMOD
+       move.w  d2,$dff062              ;modulo value for source B
+                                       ;BLTBMOD
+       move.w  d3,$dff064              ;modulo value for source A
+                                       ;BLTAMOD
+       move.w  d4,$dff066              ;modulo value for DESTINATION D
+
+
+;Step Three set the LFX bits
+;NOTE * use special LFX combinations for boolean style masking and collision
+;detection - i.e
+;A or B and B or C (ABC +ABc +AbC +abC) #%01000111 (A-source B-mask C-back-
+;ground) or #%00000101 (A-source B-collision mask)
+
+       move.b  #%00001111,$dff040      ;Enable source A
+                                       ;BLTCON0
+       or.b    #%00110011,$dff040      ;Enable source B
+                                       ;BLTCON0
+       or.b    #%01010101,$dff040      ;Enable source C
+                                       ;BLTCON0
+
+          ;just wipe the apropriate Enable commands for less sources
+
+;Step Four Do all the other shit
+
+         ;shift right for source A
+
+       move.b  d5,$dff041              ;HIGH BYTE of BLTCON0
+                                       ;note the value must take
+                                       ;up the HIGH NIBBLE of the
+                                       ;HIGH BYTE
+
+         ;shift right for source B
+
+       move.b  d6,$dff043              ;HIGH BYTE of BLTCON1
+                                       ;same applies as above
+
+         ;straight line masking for sheering off vertical strips
+         ;within a WORD boundry
+
+       move.w  #%..@1...,$dff044        ;First Word mask in BLTAFWM *
+
+       move.w  #%..@2...,$dff046        ;Last Word mask in BLTALWM *
+
+         ;Blitter DMA stuff
+
+       or.b  d7,$dff041                ;reverse LOW NIBBLE value in
+                                        ;the HIGH BYTE of BLTCON0
+                                        ;USEX bits for the source and
+                                        ;destination DMA channels (Enable)
+
+
+       move.w  d0,$dff058               ;co-ords for BLTSIZE
+                                        ;bits 0-6 width in words   *
+                                        ;bits 7-15 height (0-1024) *
+
+       rts
+
+
+

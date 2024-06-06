@@ -1,0 +1,12 @@
+;in a6 - DOSBASE
+;in a1 - consolname with PC
+;      e.g lea consolname(pc),a1
+;      and consolname definition
+;      consolname: dc.b 'con:x/y/x2/y2/** text goes here**',0
+;      x,y are top left corner and x2,y2 are bottom right
+;returns CONHANDLE number in d0 (it's a long word)
+
+Open-Window:
+       move.l  #1005,d0                ;mode-old
+       jsr     -30(a6)                 ;OPEN function in rom
+       rts

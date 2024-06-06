@@ -1,0 +1,41 @@
+;Move joystick sub
+
+TestJoystick:
+  	TST.B   $BFE001
+	BPL	FIRE2      
+        MOVE.W  $DFF00C, D0 ;Transfer JOY1DAT to D0
+        BTST    #1, D0      ;Test bit No.1
+        BNE     RIGHT       ;Set? If so, joystick moved right
+        BTST    #9, D0      ;Test bit No.9
+        BNE     LEFT        ;Set? If so, joystick moved left
+        MOVE.W  D0,D1       ;Copy from D0 to D1
+        LSR.W   #1,D1       ;Y1 and X1 in Position from Y0 and X0
+        EOR.W   D0,D1       ;Exclusive OR: Y1 EOR Y0 and X1 EOR X0
+        BTST    #0, D1      ;Test result of X1 EOR X0
+        BNE     DOWN        ;Equal to 1? If so, joystick moved down
+        BTST    #8, D1      ;Exclusive OR: Y1 EOR Y0 
+        BNE     UP          ;Equal to 1? If so, joystick moved up
+        BRA     CENTER      ;Joystick is in center position
+right:
+        addq    #1,d2
+        rts
+left:
+        subq    #1,d2
+        rts
+center:
+        rts
+       
+up:
+        subq    #1,d3       ;(40 or 80) lo or hi res
+        rts
+down:
+        addq    #1,d3
+        rts
+fire2:
+	;firebutton routine
+	rts
+
+
+
+
+
